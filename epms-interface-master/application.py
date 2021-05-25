@@ -178,6 +178,58 @@ def home():
         return render_template("prediction.html", prediction=prediction)
 
 
+@app.route("/api", methods=["GET"])
+@logged_in
+def api():
+    """IMPORTANT: Exposed to anyone without credentials.
+    Extract the contents of the patients database to a json file.
+    """
+
+    # Get all the data from the database.
+    data = db.execute("SELECT * FROM patient").fetchall()
+
+    # Not found.
+    if data is None:
+        return jsonify({"Error": "ISBN not found"}), 404
+
+    
+    # Create a dictionary.
+    data_dump = dict()
+    data_dump["name"] = []
+    data_dump["email"] = []
+    data_dump["age"] = []
+    data_dump["weight"] = []
+    data_dump["height"] = []
+    data_dump["temperature"] = []
+    data_dump["sp02"] = []
+    data_dump["gender"] = []
+    data_dump["fever"] = []
+    data_dump["cough"] = []
+    data_dump["runny_nose"] = []
+    data_dump["headache"] = []
+    data_dump["muscle_aches"] = []
+    data_dump["fatigue"] = []
+
+    for row in data:
+        data_dump["name"] += [row.name]
+        data_dump["email"] += [row.email] 
+        data_dump["age"] += [row.age] 
+        data_dump["weight"] += [row.weight]
+        data_dump["height"] += [row.height]
+        data_dump["temperature"] += [row.temperature]
+        data_dump["sp02"] += [row.sp02]
+        data_dump["gender"] += [row.gender]
+        data_dump["fever"] += [row.fever]
+        data_dump["cough"] += [row.fever]
+        data_dump["runny_nose"] += [row.runny_nose]
+        data_dump["headache"] += [row.headache]
+        data_dump["muscle_aches"] += [row.muscle_aches]
+        data_dump["fatigue"] += [row.fatigue]
+
+    return jsonify(data_dump)
+
+
+
 def binarize(string):
     """Convert string to 1 or 0 depending on its value."""
     return 1 if string == 'yes' else 0
