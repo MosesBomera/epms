@@ -14,13 +14,13 @@ app = Flask(__name__)
 
 
 # EMAIL CONFIGURATION
-app.config['MAIL_SERVER']='smtp.gmail.com'
-app.config['MAIL_PORT'] = 465
-app.config['MAIL_USERNAME'] = 'epms.cedat@gmail.com'
-app.config['MAIL_PASSWORD'] = 'netlabsug'
-app.config['MAIL_USE_TLS'] = False
-app.config['MAIL_USE_SSL'] = True
-mail = Mail(app)
+# app.config['MAIL_SERVER']='smtp.gmail.com'
+# app.config['MAIL_PORT'] = 465
+# app.config['MAIL_USERNAME'] = 'epms.cedat@gmail.com'
+# app.config['MAIL_PASSWORD'] = 'netlabsug'
+# app.config['MAIL_USE_TLS'] = False
+# app.config['MAIL_USE_SSL'] = True
+# mail = Mail(app)
 
 # Paths to logs
 log_dir = f'/home/pi/Desktop/epms/logs'
@@ -164,9 +164,9 @@ def home():
         prediction = predict(features)
 
         # Send email to the person that was screened.
-        msg = Message('COVID-19 Screening Results', sender = 'epms.cedat@gmail.com', recipients = [email])
-        msg.body = f"Hello {name}, your screening for COVID-19 returned {prediction}. \n\n EPMS Screening Team"
-        mail.send(msg)
+        # msg = Message('COVID-19 Screening Results', sender = 'epms.cedat@gmail.com', recipients = [email])
+        # msg.body = f"Hello {name}, your screening for COVID-19 returned {prediction}. \n\n EPMS Screening Team"
+        # mail.send(msg)
 
         # Save the prediction
         db.execute("INSERT INTO predictions (prediction, email) \
