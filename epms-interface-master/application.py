@@ -6,6 +6,9 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 import requests
 
+# Helpful for joining in the database.
+import uuid
+
 from util import logged_in
 from predict import predict
 
@@ -126,6 +129,7 @@ def home():
         # Get patient details
         name = request.form.get("name")
         email = request.form.get("email")
+        phone = request.form.get("phone")
         age = int(request.form.get("age"))
         gender = request.form.get("gender")
         gender = 1 if gender == 'female' else 0
@@ -143,16 +147,24 @@ def home():
         headache = binarize(request.form.get("headache"))
         muscle_aches = binarize(request.form.get("muscle_aches"))
         fatigue = binarize(request.form.get("fatigue"))
+        
+        # Comment 
+        comment = request.form.get("comment")
+
+        # Create screen uuid
+        screen_id = str(uuid.uuid4())
+        feature_dict = {"screen_id": screen_id, "name": name, "email": email, "phone": phone, "age": age, "gender": gender, 
+                    "weight": weight, "comment": comment, \
+                    "height": height, "temperature": temperature, "fever": fever, "cough": cough, \
+                     "runny_nose": runny_nose, "headache": headache, \
+                     "muscle_aches": muscle_aches, "sp02": sp02, "fatigue": fatigue}
 
         # Save the features into the database
-        db.execute("INSERT INTO patient (name, email, age, gender, weight, height, temperature, fever, \
+        db.execute("INSERT INTO patient (screen_id, name, email, phone, age, gender, comment, weight, height, temperature, fever, \
                                        cough, runny_nose, sp02, headache, muscle_aches, fatigue) \
-                    VALUES (:name, :email, :age, :gender, :weight, :height, :temperature, :fever, \
+                    VALUES (:screen_id, :name, :phone, :email, :age, :gender, :weight, :comment, :height, :temperature, :fever, \
                                      :cough, :runny_nose, :sp02, :headache, :muscle_aches, :fatigue)", \
-                    {"name": name, "email": email, "age": age, "gender": gender, "weight": weight, "height": height, \
-                     "temperature": temperature, "fever": fever, "cough": cough, \
-                     "runny_nose": runny_nose, "headache": headache, \
-                     "muscle_aches": muscle_aches, "sp02": sp02, "fatigue": fatigue})
+                    feature_dict)
         db.commit()
 
         # Prediction
@@ -169,9 +181,9 @@ def home():
         # mail.send(msg)
 
         # Save the prediction
-        db.execute("INSERT INTO predictions (prediction, email) \
-                    VALUES(:prediction, :email)", \
-                    {"prediction": prediction, "email": email})
+        db.execute("INSERT INTO predictions (screen_id, prediction) \
+                    VALUES(:screen_id, :prediction)", \
+                    {"screen_id": screen_id, "prediction": prediction})
 
         db.commit()
         
@@ -186,17 +198,18 @@ def api():
     """
 
     # Get all the data from the database.
-    data = db.execute("SELECT * FROM patient").fetchall()
+    data = db.execute(" select * from patient join predictions on patient.screen_id = predictions.screen_id;").fetchall()
 
     # Not found.
     if data is None:
-        return jsonify({"Error": "ISBN not found"}), 404
+        return jsonify({"Error": "No data found."}), 404
 
     
     # Create a dictionary.
     data_dump = dict()
     data_dump["name"] = []
     data_dump["email"] = []
+    data_dump["phone"] = []
     data_dump["age"] = []
     data_dump["weight"] = []
     data_dump["height"] = []
@@ -207,13 +220,15 @@ def api():
     data_dump["cough"] = []
     data_dump["runny_nose"] = []
     data_dump["headache"] = []
+    data_dump["comment"] = []
     data_dump["muscle_aches"] = []
     data_dump["fatigue"] = []
 
     for row in data:
         data_dump["name"] += [row.name]
         data_dump["email"] += [row.email] 
-        data_dump["age"] += [row.age] 
+        data_dump["age"] += [row.age]
+        data_dump["phone"] += []
         data_dump["weight"] += [row.weight]
         data_dump["height"] += [row.height]
         data_dump["temperature"] += [row.temperature]
@@ -223,6 +238,7 @@ def api():
         data_dump["cough"] += [row.fever]
         data_dump["runny_nose"] += [row.runny_nose]
         data_dump["headache"] += [row.headache]
+        data_dump["comment"] += []
         data_dump["muscle_aches"] += [row.muscle_aches]
         data_dump["fatigue"] += [row.fatigue]
 
