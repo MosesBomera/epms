@@ -9,9 +9,10 @@ CREATE TABLE users (
 
 /* covid-symptom table */
 CREATE TABLE patient (
-    id SERIAL PRIMARY KEY,
+    screen_id VARCHAR NOT NULL,
     name VARCHAR NOT NULL, /* Add name field */
     email VARCHAR NOT NULL, /* Add email field */
+    phone VARCHAR NOT NULL, /* Add phone number */
     age INTEGER NOT NULL,
     weight INTEGER NOT NULL,
     height INTEGER NOT NULL,
@@ -23,12 +24,12 @@ CREATE TABLE patient (
     runny_nose INTEGER NOT NULL,
     headache INTEGER NOT NULL,
     muscle_aches INTEGER NOT NULL,
-    fatigue INTEGER NOT NULL
+    fatigue INTEGER NOT NULL,
+    comment VARCHAR
 );
 
 /* predictions table */
 CREATE TABLE predictions  (
-    id SERIAL PRIMARY KEY,
-    prediction INTEGER NOT NULL,
-    email VARCHAR REFERENCES patient(email)
+    screen_id VARCHAR NOT NULL REFERENCES patient(screen_id),
+    prediction INTEGER NOT NULL
 );
