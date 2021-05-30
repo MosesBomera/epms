@@ -223,24 +223,26 @@ def api():
     data_dump["comment"] = []
     data_dump["muscle_aches"] = []
     data_dump["fatigue"] = []
+    data_dump["result"] = []
 
     for row in data:
         data_dump["name"] += [row.name]
         data_dump["email"] += [row.email] 
         data_dump["age"] += [row.age]
-        data_dump["phone"] += []
+        data_dump["phone"] += [row.phone]
         data_dump["weight"] += [row.weight]
         data_dump["height"] += [row.height]
         data_dump["temperature"] += [row.temperature]
         data_dump["sp02"] += [row.sp02]
         data_dump["gender"] += [row.gender]
         data_dump["fever"] += [row.fever]
-        data_dump["cough"] += [row.fever]
+        data_dump["cough"] += [row.cough]
         data_dump["runny_nose"] += [row.runny_nose]
         data_dump["headache"] += [row.headache]
-        data_dump["comment"] += []
         data_dump["muscle_aches"] += [row.muscle_aches]
         data_dump["fatigue"] += [row.fatigue]
+        data_dump["comment"] += [row.comment]
+        data_dump["result"] += [row.prediction]
 
     return jsonify(data_dump)
 
