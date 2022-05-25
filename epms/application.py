@@ -10,6 +10,7 @@ import requests
 import uuid
 
 from util import logged_in
+from util import read_sensor_logs
 from predict import predict
 
 # Initialize the application
@@ -100,29 +101,13 @@ def home():
 
     # Display form if a GET method
     if request.method == 'GET':
-        
-        # Query the log files and get the temperature and spo2
-        text = ''
-        with open(TEMP_PATH, 'r') as reader:
-            text = reader.readlines()
-            
-        app.logger.info("temp: ",text)
-        
-        
         # Get the temperature value
-        temp = float(text[0].split()[-1])
-        
+        temp = read_sensor_logs(TEMP_PATH)
         # Get the oximeter values
-        text_sp02 = ''
-        with open(SPO2_PATH, 'r') as reader:
-            text_sp02 = reader.readlines()
-        
-        # Get the temperature value
-        sp02 = float(text_sp02[0].split()[-1])
-
+        sp02 = read_sensor_logs(SPO2_PATH)
         return render_template("home.html",
-                    full_name=full_name, temp=89,
-                               sp02=34)
+                    full_name=full_name, temp=temp,
+                               sp02=sp02)
     
 
     if request.method == 'POST':
@@ -245,9 +230,3 @@ def api():
         data_dump["result"] += [row.prediction]
 
     return jsonify(data_dump)
-
-
-
-def binarize(string):
-    """Convert string to 1 or 0 depending on its value."""
-    return 1 if string == 'yes' else 0
