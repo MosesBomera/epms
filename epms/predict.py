@@ -1,29 +1,58 @@
-from joblib import load
 import pandas as pd
 import numpy as np
+from joblib import load
+import category_encoders as ce
 
-cat_attribs = ['gender', 'fever', 'cough', 'runny_nose', 'headache', 'muscle_aches', 'fatigue']
-num_attribs = ['age', 'weight', 'height', 'temperature', 'sp02']
+class Model:
+    def __init__(
+        self, 
+        model_path,
+        code="DS3"
+    ):
+        """Initializes a model object, the class loads the model at model_path.
 
-# Load model
-model = load('model/epms.joblib')
-pipeline = load('model/pipeline.joblib')
+        args
+        model_path  <str> the path to the folder with the saved model objects.
+        code        <str> a code identifying the model being loaded, for preprocessing
+                          and feature list mapping.
+        """
+        self.model_path = model_path
+        self.code = code
+        self.model = load(model_path)
+        # Set features based on model code. 
+        if self.code == "DS3":
+            self.features = [
+                'fever', 'fatigue', 'diarrhoea', 'chest_pain', 'loss_of_smell', 
+                'headache', 'sore_throat', 'unusual_muscle_pains', 'gender', 
+                'interacted_with_covid'
+                ]
 
-def predict(features):
-    """
-        Makes a prediction given an example.
+    def _preprocessing(self, df):
+        # Make a copy of the df.
+        df = df.copy(deep=True)
 
-        features <dict> a dictionary containing features.
-    """
-    # Create a dataframe
-    data = pd.DataFrame.from_dict(features)
+        # Model specific preprocessing.
+        if self.code == "DS3":
+            # Feature encoding mapping.
+            mapping = [
+                {"col":"fatigue", "mapping": {'mild':0, 'no':1, 'severe': 2}},
+                {"col":"gender", "mapping": {"0.0":0, "1.0": 1}},
+                {"col":"interacted_with_covid", 
+                "mapping":{ "no":0, "yes_documented_suspected":1,"yes_suspected":2, "yes_documented":3 }}
+            ] + [{"col": feature, "mapping": {False:0, True:1}} \
+                for feature in ['fever', 'diarrhoea', 'chest_pain', 'loss_of_smell',\
+                'headache', 'sore_throat', 'unusual_muscle_pains']]
 
-    # Transform
-    prepared = pipeline.transform(data)
-    prediction = model.predict(prepared)
+            # Feature encoding.
+            encoder = ce.OrdinalEncoder(mapping=mapping, return_df=True)
+            # Select only the expected features and in the expected order.
+            df_enc = encoder.fit_transform(df[self.features])
+            df_enc = df_enc.astype('int64')
+        
+        # Set df_enc to the result of preprocessing.
+        return df_enc
 
-    # Return the prediction
-    if prediction[0] == 0:
-        return 'Negative'
-    else:
-        return 'Positive'
+    def __call__(self, df):
+        """Predict by calling the model class."""
+        df = self._preprocessing(df)[self.features]
+        return self.model.predict(df), self.model.predict_proba(df)
