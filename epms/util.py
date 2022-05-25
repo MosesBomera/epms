@@ -9,3 +9,12 @@ def logged_in(f):
             return redirect(url_for('index'))
         return f(*args, **kwargs)
     return wrapped
+
+def read_sensor_logs(
+    log_path: "The path to the log file"
+):
+    # Read file.
+    with open(log_path, 'r') as reader:
+        text = reader.readlines()
+    return float(text[0].split()[-1])
+
