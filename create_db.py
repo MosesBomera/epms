@@ -17,3 +17,16 @@ class User(db.Model):
 
     def __repr__(self):
         return f'<User {self.username}>'
+
+
+class Screen(db.Model):
+    __tablename__ = 'screens'
+    id = db.Column(db.String(36), primary_key=True)
+    name = db.Column(db.String(64))
+    email = db.Column(db.String(64), nullable=True)
+    phone = db.Column(db.String(13), nullable=True) # Account for calling code.
+    data = db.Column(db.Text())
+    comment = db.Column(db.String(100), nullable=True)
+
+    def __repr__(self):
+        return f'<Screen for {self.name}>'
