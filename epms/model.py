@@ -2,25 +2,33 @@ import pandas as pd
 import numpy as np
 from joblib import load
 import category_encoders as ce
+from typing import List, Optional
 
 class Model:
+    """
+    Model class.
+    """
     def __init__(
         self, 
-        model_path,
-        code="DS3"
+        model_path: str,
+        model_code: Optional[str] = "DS3"
     ):
-        """Initializes a model object, the class loads the model at model_path.
+        """
+        Initializes a model object, the class loads the model at model_path.
 
-        args
-        model_path  <str> the path to the folder with the saved model objects.
-        code        <str> a code identifying the model being loaded, for preprocessing
-                          and feature list mapping.
+        Parameters
+        ----------
+        model_path
+            The path to the folder with the saved model objects.
+        model_code
+            Optionally, a string code identifying the model being loaded, for preprocessing
+            and feature list mapping.
         """
         self.model_path = model_path
-        self.code = code
+        self.model_code = model_code
         self.model = load(model_path)
         # Set features based on model code. 
-        if self.code == "DS3":
+        if self.model_code == "DS3":
             self.features = [
                 'fever', 'fatigue', 'diarrhoea', 'chest_pain', 'loss_of_smell', 
                 'headache', 'sore_throat', 'unusual_muscle_pains', 'gender', 
@@ -32,7 +40,7 @@ class Model:
         df = df.copy(deep=True)
 
         # Model specific preprocessing.
-        if self.code == "DS3":
+        if self.model_code == "DS3":
             # Feature encoding mapping.
             mapping = [
                 {"col":"fatigue", "mapping": {'mild':0, 'no':1, 'severe': 2}},
