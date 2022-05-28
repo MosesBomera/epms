@@ -145,3 +145,4 @@ dmypy.json
 # App stuff
 models/
 data.sqlite
+to_do.py

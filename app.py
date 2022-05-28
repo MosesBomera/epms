@@ -104,43 +104,31 @@ def home():
     if request.method == 'GET':
         # Get the temperature, oximeter values.
         temp, sp02 = read_sensor_logs(TEMP_PATH), read_sensor_logs(SPO2_PATH)
-        return render_template("home.html", lastname=lastname, temp=temp, sp02=sp02)
+        return render_template("home.html", temp=temp, sp02=sp02)
 
     if request.method == 'POST':
+        # Get patient data, symptoms.
+        patient_id = str(uuid.uuid4())
+        patient_data = dict(request.form)
+        # app.logger.debug(f"Form key, value: {dict(inputs_data)}")
+
         # Get patient details.
-        inputs_data = dict(request.form)
-        # Create screen uuid
-        screen_id = str(uuid.uuid4())
-        inputs_data['screen_id'] = screen_id
-        app.logger.debug(f"Form key, value: {dict(inputs_data)}")
+        name, email, phone = patient_data.pop("name"), patient_data.pop("email"), \
+                             patient_data.pop("phone")
+        # Remove comment field from symptom data.
+        comment = patient_data.pop("comment")
+        # Set up patient. 
+        patient = Patient(
+            id=patient_id, # ID
+            name=name, email=email, phone=phone, # Details
+            symptoms=str(patient_data),
+            comment=comment)
+        # Write data to database.
+        db.session.add(patient)
+        db.session.commit()
 
-        # # Save the features into the database
-        # db.execute("INSERT INTO patient (screen_id, name, email, phone, age, gender, comment, weight, height, temperature, fever, \
-        #                                cough, runny_nose, sp02, headache, muscle_aches, fatigue) \
-        #             VALUES (:screen_id, :name, :phone, :email, :age, :gender, :weight, :comment, :height, :temperature, :fever, \
-        #                              :cough, :runny_nose, :sp02, :headache, :muscle_aches, :fatigue)", \
-        #             feature_dict)
-        # db.commit()
+        # Add prediction pipeline here.
 
-        # # Prediction
-        # features = {"age": [age], "gender": [gender], "weight": [weight], "height": [height], \
-        #             "temperature": [temperature], "fever": [fever], "cough": [cough], \
-        #             "runny_nose": [runny_nose], "headache": [headache], \
-        #             "muscle_aches": [muscle_aches], "sp02": [sp02], "fatigue": [fatigue]}
-
-        # prediction = predict(features)
-
-        # # Send email to the person that was screened.
-        # # msg = Message('COVID-19 Screening Results', sender = 'epms.cedat@gmail.com', recipients = [email])
-        # # msg.body = f"Hello {name}, your screening for COVID-19 returned {prediction}. \n\n EPMS Screening Team"
-        # # mail.send(msg)
-
-        # # Save the prediction
-        # db.execute("INSERT INTO predictions (screen_id, prediction) \
-        #             VALUES(:screen_id, :prediction)", \
-        #             {"screen_id": screen_id, "prediction": prediction})
-
-        # db.commit()
         prediction = 'Prediction Placeholder'
         
         return render_template("prediction.html", prediction=prediction)

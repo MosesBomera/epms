@@ -20,7 +20,7 @@ class Patient(db.Model):
     name = db.Column(db.String(64), nullable=False)
     email = db.Column(db.String(64))
     phone = db.Column(db.String(13)) 
-    data = db.Column(db.Text, nullable=False)
+    symptoms = db.Column(db.Text, nullable=False)
     comment = db.Column(db.String(100))
     predictions = db.relationship('Prediction', backref='patient')
 
