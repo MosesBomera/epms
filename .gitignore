@@ -64,6 +64,7 @@ db.sqlite3-journal
 # Flask stuff:
 instance/
 .webassets-cache
+flask_session/
 
 # Scrapy stuff:
 .scrapy
@@ -141,6 +142,6 @@ dmypy.json
 # MacOS
 .DS_Store
 
-# Folders to ignore
-flask_session/
+# App stuff
 models/
+data.sqlite
