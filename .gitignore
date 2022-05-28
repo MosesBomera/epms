@@ -141,5 +141,6 @@ dmypy.json
 # MacOS
 .DS_Store
 
-# Flask folder
+# Folders to ignore
 flask_session/
+models/
