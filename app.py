@@ -140,52 +140,11 @@ def api():
     """IMPORTANT: Exposed to anyone without credentials.
     Extract the contents of the patients database to a json file.
     """
-
     # Get all the data from the database.
-    data = db.execute(" select * from patient join predictions on patient.screen_id = predictions.screen_id;").fetchall()
+    data = db.execute("SELECT * FROM patients JOIN predictions ON patient.id = predictions.patient_id;").fetchall()
 
     # Not found.
     if data is None:
         return jsonify({"Error": "No data found."}), 404
 
-    
-    # Create a dictionary.
-    data_dump = dict()
-    data_dump["name"] = []
-    data_dump["email"] = []
-    data_dump["phone"] = []
-    data_dump["age"] = []
-    data_dump["weight"] = []
-    data_dump["height"] = []
-    data_dump["temperature"] = []
-    data_dump["sp02"] = []
-    data_dump["gender"] = []
-    data_dump["fever"] = []
-    data_dump["cough"] = []
-    data_dump["runny_nose"] = []
-    data_dump["headache"] = []
-    data_dump["comment"] = []
-    data_dump["muscle_aches"] = []
-    data_dump["fatigue"] = []
-    data_dump["result"] = []
-
-    for row in data:
-        data_dump["name"] += [row.name]
-        data_dump["email"] += [row.email] 
-        data_dump["age"] += [row.age]
-        data_dump["phone"] += [row.phone]
-        data_dump["weight"] += [row.weight]
-        data_dump["height"] += [row.height]
-        data_dump["temperature"] += [row.temperature]
-        data_dump["sp02"] += [row.sp02]
-        data_dump["gender"] += [row.gender]
-        data_dump["fever"] += [row.fever]
-        data_dump["cough"] += [row.cough]
-        data_dump["runny_nose"] += [row.runny_nose]
-        data_dump["headache"] += [row.headache]
-        data_dump["muscle_aches"] += [row.muscle_aches]
-        data_dump["fatigue"] += [row.fatigue]
-        data_dump["comment"] += [row.comment]
-        data_dump["result"] += [row.prediction]
-
-    return jsonify(data_dump)
+    return 'jsonify(data_dump) -> TO-DO'
