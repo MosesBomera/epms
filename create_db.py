@@ -11,8 +11,9 @@ class User(db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), unique=True)
-    first_name = db.Column(db.String(64))
-    last_name = db.Column(db.String(64))
+    firstname = db.Column(db.String(64))
+    lastname = db.Column(db.String(64))
+    password = db.Column(db.String(64))
 
     def __repr__(self):
         return f'<User {self.username}>'
