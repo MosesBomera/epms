@@ -1,24 +1,32 @@
 import os
-from pathlib import Path
+import uuid
 
-from flask import Flask, session, render_template, request, redirect, jsonify, url_for
+from flask import Flask, render_template, redirect
+from flask import session, request, jsonify, url_for
 from flask_mail import Mail, Message
 from flask_session import Session
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker
-
-# Helpful for joining in the database.
-import uuid
+from flask_migrate import Migrate
+from db import db, User, Patient, Prediction
 
 from utils import logged_in
 from utils import read_sensor_logs
 from model import Model
 
-# Initialize the application
+# Configurations
+basedir = os.path.abspath(os.path.dirname(__file__))
+
+# Application
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'data.sqlite')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
+# Database
+db.app = app 
+db.init_app(app)
+db.create_all()
+migrate = Migrate(app, db)
 
-# EMAIL CONFIGURATION
+# Email
 # app.config['MAIL_SERVER']='smtp.gmail.com'
 # app.config['MAIL_PORT'] = 465
 # app.config['MAIL_USERNAME'] = 'epms.cedat@gmail.com'
@@ -27,54 +35,46 @@ app = Flask(__name__)
 # app.config['MAIL_USE_SSL'] = True
 # mail = Mail(app)
 
-# Paths to logs
-log_dir = Path.cwd()/'logs'
-TEMP_PATH = log_dir/'temperature.txt' # Path to the temperature log file.
-SPO2_PATH = log_dir/'sp02.txt' # Path to the Spo2 log file.
-
-
-# Configure session to use filesystem
+# Session
 app.secret_key = 'u893j2wmsldrircsmc5encx'
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
 
-# Set up database
-engine = create_engine("sqlite:///epms.db")
-db = scoped_session(sessionmaker(bind=engine))
+# Paths to logs, move to .env file.
+TEMP_PATH = os.path.join(basedir, 'logs', 'temperature.txt')
+SPO2_PATH = os.path.join(basedir, 'logs', 'sp02.txt')
 
 @app.route("/", methods=['POST', 'GET'])
 def index():
-    """Renders the home page with the login form."""
+    """
+    Renders the home page with the login form.
+    """
     # Already login
     if 'username' in session:
         username = session['username']
-        full_name = session['full_name']
+        lastname = session['lastname']
         return redirect(url_for('home'))
 
-    # Regular login
+    # Regular login.
     if request.method == "POST":
         username = request.form.get("username")
         password = request.form.get("password")
 
-        # Check database
-        # retrieve details based on the username
-        user = db.execute("SELECT id, full_name, username, password FROM users WHERE username = :username", \
-                    {'username': username}).fetchone()
-
-        # If user doesn't exist
-        if user is None:
-            return render_template("index.html", error="Invalid Crendentials")
+        # Get user database reference.
+        user = User.query.filter_by(username=username).first()
+        if user is None: # If user doesn't exist.
+            return render_template("index.html", error="Invalid Credentials")
         else:
             password_check = user.password == password
             if password_check:
                 session['username'] = user.username
-                session['full_name'] = user.full_name
+                session['lastname'] = user.lastname
                 session['id'] = user.id
                 return redirect(url_for('home'))
             else:
                 return render_template("index.html", error="Invalid Password or Username")
-    # First page visit
+    # First page visit.
     if request.method == "GET":
         return render_template("index.html")
 
@@ -82,12 +82,13 @@ def index():
 @app.route("/logout")
 @logged_in
 def logout():
-    """Logout functionality for the website"""
+    """
+    Logout functionality for the website.
+    """
     # 'Destroy'  user credentials
     session.pop('username', None)
-    session.pop('full_name', None)
+    session.pop('lastname', None)
     session.pop('id', None)
-
     return render_template("index.html", message="Logged Out!")
 
 
@@ -95,58 +96,23 @@ def logout():
 @logged_in
 def home():
     """
-        The main page of the application.
+    The main page of the application.
     """
     username = session['username']
-    full_name = session['full_name']
-
+    lastname = session['lastname']
     # Display form if a GET method
     if request.method == 'GET':
-        # Get the temperature value
-        temp = read_sensor_logs(TEMP_PATH)
-        # Get the oximeter values
-        sp02 = read_sensor_logs(SPO2_PATH)
-        return render_template("home.html",
-                    full_name=full_name, temp=temp,
-                               sp02=sp02)
-    
+        # Get the temperature, oximeter values.
+        temp, sp02 = read_sensor_logs(TEMP_PATH), read_sensor_logs(SPO2_PATH)
+        return render_template("home.html", lastname=lastname, temp=temp, sp02=sp02)
 
     if request.method == 'POST':
         # Get patient details.
-        form_inputs = request.get_json()
-        app.logger.debug(f"{form_inputs}")
-
-        # name = request.form.get("name")
-        # email = request.form.get("email")
-        # phone = request.form.get("phone")
-        # age = int(request.form.get("age"))
-        # gender = request.form.get("gender")
-        # gender = 1 if gender == 'female' else 0
-
-        # # Symptoms
-        # weight = int(request.form.get("weight"))
-        # height = int(request.form.get("height"))
-        # temperature = request.form.get("temperature")
-        # temperature = float(f"{temperature}")
-        # sp02 = int(request.form.get("sp02"))
-
-        # fever = binarize(request.form.get("fever"))
-        # cough = binarize(request.form.get("cough"))
-        # runny_nose = binarize(request.form.get("runny_nose"))
-        # headache = binarize(request.form.get("headache"))
-        # muscle_aches = binarize(request.form.get("muscle_aches"))
-        # fatigue = binarize(request.form.get("fatigue"))
-        
-        # # Comment 
-        # comment = request.form.get("comment")
-
-        # # Create screen uuid
-        # screen_id = str(uuid.uuid4())
-        # feature_dict = {"screen_id": screen_id, "name": name, "email": email, "phone": phone, "age": age, "gender": gender, 
-        #             "weight": weight, "comment": comment, \
-        #             "height": height, "temperature": temperature, "fever": fever, "cough": cough, \
-        #              "runny_nose": runny_nose, "headache": headache, \
-        #              "muscle_aches": muscle_aches, "sp02": sp02, "fatigue": fatigue}
+        inputs_data = dict(request.form)
+        # Create screen uuid
+        screen_id = str(uuid.uuid4())
+        inputs_data['screen_id'] = screen_id
+        app.logger.debug(f"Form key, value: {dict(inputs_data)}")
 
         # # Save the features into the database
         # db.execute("INSERT INTO patient (screen_id, name, email, phone, age, gender, comment, weight, height, temperature, fever, \
@@ -175,7 +141,7 @@ def home():
         #             {"screen_id": screen_id, "prediction": prediction})
 
         # db.commit()
-        prediction = True
+        prediction = 'Prediction Placeholder'
         
         return render_template("prediction.html", prediction=prediction)
 
