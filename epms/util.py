@@ -11,8 +11,21 @@ def logged_in(f):
     return wrapped
 
 def read_sensor_logs(
-    log_path: "The path to the log file"
+    log_path
 ):
+    """
+    Reads a sensor log file at te log_path. 
+
+    Parameters
+    ----------
+    log_path
+        The path/to the sensor log file.
+    
+    Returns
+    -------
+    value
+        A float value of the sensor reading.
+    """
     # Read file.
     with open(log_path, 'r') as reader:
         text = reader.readlines()
