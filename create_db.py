@@ -19,14 +19,21 @@ class User(db.Model):
         return f'<User {self.username}>'
 
 
-class Screen(db.Model):
-    __tablename__ = 'screens'
+class Patient(db.Model):
+    __tablename__ = 'patients'
     id = db.Column(db.String(36), primary_key=True)
     name = db.Column(db.String(64))
     email = db.Column(db.String(64), nullable=True)
     phone = db.Column(db.String(13), nullable=True) # Account for calling code.
     data = db.Column(db.Text())
     comment = db.Column(db.String(100), nullable=True)
+    predictions = db.relationship('Prediction', backref='patient')
 
     def __repr__(self):
-        return f'<Screen for {self.name}>'
+        return f'<Patient {self.name}>'
+
+
+class Prediction(db.Model):
+    ___tablename___ = 'predictions'
+    id = db.Column(db.Integer, primary_key=True)
+    screen_id = db.Column(db.String(36), db.ForeignKey('patients.id'))
