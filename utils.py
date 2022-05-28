@@ -31,4 +31,4 @@ def read_sensor_logs(
     # Read file.
     with open(log_path, 'r') as reader:
         text = reader.readlines()
-    return round(float(text[0].split()[-1]))
+    return round(float(text[0].split()[-1]), 2)
