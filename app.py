@@ -112,25 +112,30 @@ def home():
         # Get patient data, symptoms.
         patient_id = str(uuid.uuid4())
         patient_data = dict(request.form)
+        
         # Get patient details.
         name, email, phone = patient_data.pop("name"), patient_data.pop("email"), \
                              patient_data.pop("phone")
         # Remove comment field from symptom data.
         comment = patient_data.pop("comment")
-        # Set up patient. 
+        
+        # The classifier model.
+        classifier = Model(MODEL_PATH)
+        covid_status_prediction = classifier(pd.DataFrame(patient_data, index=[0]))
+        
+        # Patient. 
         patient = Patient(id=patient_id, name=name, email=email, phone=phone, 
             symptoms=str(patient_data),comment=comment)
-        # Write data to database.
-        # db.session.add(patient)
-        # db.session.commit()
 
-        # Add prediction pipeline here.
-        # app.logger.debug(f"DataFrame: {}")
-        # The classifier.
-        classifier_model = Model(MODEL_PATH)
-        prediction = classifier_model(pd.DataFrame(patient_data, index=[0]))
+        # Prediction
+        prediction = Prediction(
+            patient_id=patient_id, 
+            prediction=",".join((str(classifier.prediction[0]), str(classifier.prediction[1]))))
         
-        return render_template("prediction.html", prediction=prediction)
+        db.session.add_all([patient, prediction])
+        db.session.commit() # Write to database.
+
+        return render_template("prediction.html", prediction=covid_status_prediction)
 
 
 @app.route("/api", methods=["GET"])
