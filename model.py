@@ -27,13 +27,12 @@ class Model:
         self.model_path = model_path
         self.model_code = model_code
         self.model = load(model_path)
+        self.prediction = None
         # Set features based on model code. 
         if self.model_code == "DS3":
             self.features = [
                 'fever', 'fatigue', 'diarrhoea', 'chest_pain', 'loss_of_smell', 
-                'headache', 'sore_throat', 'muscle_pains', 'gender', 
-                'interacted_with_covid'
-                ]
+                'headache', 'sore_throat', 'muscle_pains', 'gender', 'interacted_with_covid']
 
     def _preprocessing(self, df):
         # Make a copy of the df.
@@ -44,7 +43,7 @@ class Model:
             # Feature encoding mapping.
             mapping = [
                 {"col":"fatigue", "mapping": {'mild':0, 'no':1, 'severe': 2}},
-                {"col":"gender", "mapping": {"0.0":0, "1.0": 1}},
+                {"col":"gender", "mapping": {"male":0, "female": 1}},
                 {"col":"interacted_with_covid", 
                 "mapping":{ "no":0, "yes_documented_suspected":1,"yes_suspected":2, "yes_documented":3 }}
             ] + [{"col": feature, "mapping": {False:0, True:1}} \
@@ -60,7 +59,22 @@ class Model:
         # Set df_enc to the result of preprocessing.
         return df_enc
 
+    def _postprocessing(self):
+        """
+        Process the output to a human-reader format.
+        """
+        predstring = ''
+        pred = np.argmax(self.prediction[1])
+        if pred==1:
+            predstring += f"Positive"
+        else:
+            predstring += f"Negative"
+        return f"{predstring}, Confidence {round(round(self.prediction[1][0][pred], 2)*100)}%"
+
     def __call__(self, df):
-        """Predict by calling the model class."""
+        """
+        Predict by calling the model class.
+        """
         df = self._preprocessing(df)[self.features]
-        return self.model.predict(df), self.model.predict_proba(df)
+        self.prediction = self.model.predict(df), self.model.predict_proba(df)
+        return self._postprocessing()
