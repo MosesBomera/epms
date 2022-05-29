@@ -4,11 +4,10 @@ import pandas as pd
 
 from flask import Flask, render_template, redirect
 from flask import session, request, jsonify, url_for
-from flask_mail import Mail, Message
 from flask_session import Session
 from flask_migrate import Migrate
-from db import db, User, Patient, Prediction
 
+from db import db, User, Patient, Prediction
 from utils import logged_in
 from utils import read_sensor_logs
 from model import Model
@@ -26,15 +25,6 @@ db.app = app
 db.init_app(app)
 db.create_all()
 migrate = Migrate(app, db)
-
-# Email
-# app.config['MAIL_SERVER']='smtp.gmail.com'
-# app.config['MAIL_PORT'] = 465
-# app.config['MAIL_USERNAME'] = 'epms.cedat@gmail.com'
-# app.config['MAIL_PASSWORD'] = 'netlabsug'
-# app.config['MAIL_USE_TLS'] = False
-# app.config['MAIL_USE_SSL'] = True
-# mail = Mail(app)
 
 # Session
 app.secret_key = 'u893j2wmsldrircsmc5encx'
