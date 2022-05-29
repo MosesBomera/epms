@@ -112,7 +112,7 @@ def home():
         # Get patient data, symptoms.
         patient_id = str(uuid.uuid4())
         patient_data = dict(request.form)
-        
+
         # Get patient details.
         name, email, phone = patient_data.pop("name"), patient_data.pop("email"), \
                              patient_data.pop("phone")
@@ -141,14 +141,18 @@ def home():
 @app.route("/api", methods=["GET"])
 @logged_in
 def api():
-    """IMPORTANT: Exposed to anyone without credentials.
+    """
+    IMPORTANT: Exposed to anyone without credentials.
     Extract the contents of the patients database to a json file.
     """
     # Get all the data from the database.
-    data = db.execute("SELECT * FROM patients JOIN predictions ON patient.id = predictions.patient_id;").fetchall()
-
+    query_string = "SELECT patient_id, symptoms, prediction FROM" \
+                   " patients JOIN predictions" \
+                   " ON patients.id = predictions.patient_id;"
+    data = pd.read_sql_query(query_string, app.config['SQLALCHEMY_DATABASE_URI'])
+    # app.logger.debug(f"DB Data: {data}")
     # Not found.
-    if data is None:
+    if data.empty:
         return jsonify({"Error": "No data found."}), 404
-
-    return 'jsonify(data_dump) -> TO-DO'
+    # Return json object.
+    return data.to_json()
