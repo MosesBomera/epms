@@ -1,5 +1,6 @@
 import os
 import uuid
+import pandas as pd
 
 from flask import Flask, render_template, redirect
 from flask import session, request, jsonify, url_for
@@ -44,6 +45,7 @@ Session(app)
 # Paths to logs, move to .env file.
 TEMP_PATH = os.path.join(basedir, 'logs', 'temperature.txt')
 SPO2_PATH = os.path.join(basedir, 'logs', 'sp02.txt')
+MODEL_PATH = os.path.join(basedir, 'models', 'DS3__RandomForestClassifier_Dataset_Three_Model.joblib')
 
 @app.route("/", methods=['POST', 'GET'])
 def index():
@@ -110,26 +112,23 @@ def home():
         # Get patient data, symptoms.
         patient_id = str(uuid.uuid4())
         patient_data = dict(request.form)
-        # app.logger.debug(f"Form key, value: {dict(inputs_data)}")
-
         # Get patient details.
         name, email, phone = patient_data.pop("name"), patient_data.pop("email"), \
                              patient_data.pop("phone")
         # Remove comment field from symptom data.
         comment = patient_data.pop("comment")
         # Set up patient. 
-        patient = Patient(
-            id=patient_id, # ID
-            name=name, email=email, phone=phone, # Details
-            symptoms=str(patient_data),
-            comment=comment)
+        patient = Patient(id=patient_id, name=name, email=email, phone=phone, 
+            symptoms=str(patient_data),comment=comment)
         # Write data to database.
-        db.session.add(patient)
-        db.session.commit()
+        # db.session.add(patient)
+        # db.session.commit()
 
         # Add prediction pipeline here.
-
-        prediction = 'Prediction Placeholder'
+        # app.logger.debug(f"DataFrame: {}")
+        # The classifier.
+        classifier_model = Model(MODEL_PATH)
+        prediction = classifier_model(pd.DataFrame(patient_data, index=[0]))
         
         return render_template("prediction.html", prediction=prediction)
 
