@@ -153,6 +153,6 @@ def api():
     # app.logger.debug(f"DB Data: {data}")
     # Not found.
     if data.empty:
-        return jsonify({"Error": "No data found."}), 404
+        return jsonify({"Info": "No data found."}), 404
     # Return json object.
     return data.to_json()
