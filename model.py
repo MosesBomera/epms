@@ -31,7 +31,7 @@ class Model:
         if self.model_code == "DS3":
             self.features = [
                 'fever', 'fatigue', 'diarrhoea', 'chest_pain', 'loss_of_smell', 
-                'headache', 'sore_throat', 'unusual_muscle_pains', 'gender', 
+                'headache', 'sore_throat', 'muscle_pains', 'gender', 
                 'interacted_with_covid'
                 ]
 
@@ -49,7 +49,7 @@ class Model:
                 "mapping":{ "no":0, "yes_documented_suspected":1,"yes_suspected":2, "yes_documented":3 }}
             ] + [{"col": feature, "mapping": {False:0, True:1}} \
                 for feature in ['fever', 'diarrhoea', 'chest_pain', 'loss_of_smell',\
-                'headache', 'sore_throat', 'unusual_muscle_pains']]
+                'headache', 'sore_throat', 'muscle_pains']]
 
             # Feature encoding.
             encoder = ce.OrdinalEncoder(mapping=mapping, return_df=True)

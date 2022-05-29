@@ -69,21 +69,32 @@
         </div>
       </fieldset>
 
-      <!-- Weight -->
-      <div class="form-group row">
-        <label for="weight" class="col-sm-2 col-form-label">Weight (Kgs)</label>
-        <div class="col-sm-10">
-          <input type="number" class="form-control" name="weight" placeholder="What is your weight?" required>
+      <!-- Fatigue -->
+      <fieldset class="form-group">
+        <div class="row">
+          <legend class="col-form-label col-sm-2 pt-0">Fatigue</legend>
+          <div class="col-sm-10">
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="fatigue" value="mild" required>
+              <label class="form-check-label" for="mild">
+                Mild
+              </label>
+            </div>
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="fatigue"  value="no">
+              <label class="form-check-label" for="no">
+                No
+              </label>
+            </div>
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="fatigue"  value="severe">
+              <label class="form-check-label" for="severe">
+                Severe
+              </label>
+            </div>
+          </div>
         </div>
-      </div>
-
-      <!-- Height -->
-      <div class="form-group row">
-        <label for="height" class="col-sm-2 col-form-label">Height (cm)</label>
-        <div class="col-sm-10">
-          <input type="number" class="form-control" name="height" placeholder="What is your height?" required>
-        </div>
-      </div>
+      </fieldset>
 
        <!-- Temperature -->
       <div class="form-group row">
@@ -122,19 +133,19 @@
         </div>
       </fieldset>
 
-      <!-- Cough -->
+      <!-- Loss of smell -->
       <fieldset class="form-group">
         <div class="row">
-          <legend class="col-form-label col-sm-2 pt-0">Cough</legend>
+          <legend class="col-form-label col-sm-2 pt-0">Loss of Smell</legend>
           <div class="col-sm-10">
             <div class="form-check-inline">
-              <input class="form-check-input" type="radio" name="cough" value="yes" required>
+              <input class="form-check-input" type="radio" name="loss_of_smell" value="yes" required>
               <label class="form-check-label" for="yes">
                 Yes
               </label>
             </div>
             <div class="form-check-inline">
-              <input class="form-check-input" type="radio" name="cough"  value="no" reuired>
+              <input class="form-check-input" type="radio" name="loss_of_smell"  value="no" reuired>
               <label class="form-check-label" for="no">
                 No
               </label>
@@ -143,19 +154,19 @@
         </div>
       </fieldset>
 
-      <!-- Runny Nose -->
+      <!-- Diarrhoea -->
       <fieldset class="form-group">
         <div class="row">
-          <legend class="col-form-label col-sm-2 pt-0">Runny Nose</legend>
+          <legend class="col-form-label col-sm-2 pt-0">Diarrhoea</legend>
           <div class="col-sm-10">
             <div class="form-check-inline">
-              <input class="form-check-input" type="radio" name="runny_nose" value="yes" required>
+              <input class="form-check-input" type="radio" name="diarrhoea" value="yes" required>
               <label class="form-check-label" for="yes">
                 Yes
               </label>
             </div>
             <div class="form-check-inline">
-              <input class="form-check-input" type="radio" name="runny_nose"  value="no" reuired>
+              <input class="form-check-input" type="radio" name="diarrhoea"  value="no" reuired>
               <label class="form-check-label" for="no">
                 No
               </label>
@@ -185,19 +196,19 @@
         </div>
       </fieldset>
 
-      <!-- Muscle Ache -->
+      <!-- Muscle Pains -->
       <fieldset class="form-group">
         <div class="row">
-          <legend class="col-form-label col-sm-2 pt-0">Muscle Ache</legend>
+          <legend class="col-form-label col-sm-2 pt-0">Muscle Pains</legend>
           <div class="col-sm-10">
             <div class="form-check-inline">
-              <input class="form-check-input" type="radio" name="muscle_aches" value="yes" required>
+              <input class="form-check-input" type="radio" name="muscle_pains" value="yes" required>
               <label class="form-check-label" for="yes">
                 Yes
               </label>
             </div>
             <div class="form-check-inline">
-              <input class="form-check-input" type="radio" name="muscle_aches"  value="no" reuired>
+              <input class="form-check-input" type="radio" name="muscle_pains"  value="no" reuired>
               <label class="form-check-label" for="no">
                 No
               </label>
@@ -206,23 +217,78 @@
         </div>
       </fieldset>
 
-      <!-- Fatigue -->
+      <!-- Sore Throat -->
       <fieldset class="form-group">
         <div class="row">
-          <legend class="col-form-label col-sm-2 pt-0">Fatigue</legend>
+          <legend class="col-form-label col-sm-2 pt-0">Sore Throat</legend>
           <div class="col-sm-10">
             <div class="form-check-inline">
-              <input class="form-check-input" type="radio" name="fatigue" value="yes" required>
+              <input class="form-check-input" type="radio" name="sore_throat" value="yes" required>
               <label class="form-check-label" for="yes">
                 Yes
               </label>
             </div>
             <div class="form-check-inline">
-              <input class="form-check-input" type="radio" name="fatigue"  value="no" reuired>
+              <input class="form-check-input" type="radio" name="sore_throat"  value="no" reuired>
               <label class="form-check-label" for="no">
                 No
               </label>
             </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Chest Pain -->
+      <fieldset class="form-group">
+        <div class="row">
+          <legend class="col-form-label col-sm-2 pt-0">Chest Pain</legend>
+          <div class="col-sm-10">
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="chest_pain" value="yes" required>
+              <label class="form-check-label" for="yes">
+                Yes
+              </label>
+            </div>
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="chest_pain"  value="no" reuired>
+              <label class="form-check-label" for="no">
+                No
+              </label>
+            </div>
+          </div>
+        </div>
+      </fieldset>
+
+      <!-- Interacted with COVID -->
+      <fieldset class="form-group">
+        <div class="row">
+          <legend class="col-form-label col-sm-2 pt-0">Interacted with COVID</legend>
+          <div class="col-sm-10">
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="interacted_with_covid"  value="no" reuired>
+              <label class="form-check-label" for="no">
+                No
+              </label>
+            </div>
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="interacted_with_covid" value="yes_documented" required>
+              <label class="form-check-label" for="yes_documented">
+                Yes (Documented)
+              </label>
+            </div>
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="interacted_with_covid" value="yes_suspected" required>
+              <label class="form-check-label" for="yes_suspected">
+                Yes (Suspected)
+              </label>
+            </div>
+            <div class="form-check-inline">
+              <input class="form-check-input" type="radio" name="interacted_with_covid" value="yes_documented_suspected" required>
+              <label class="form-check-label" for="yes_documented_suspected">
+                Yes (Both Suspected and Documented) <!-- Find out more about what this means. -->
+              </label>
+            </div>
+
           </div>
         </div>
       </fieldset>
