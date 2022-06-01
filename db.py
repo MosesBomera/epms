@@ -32,4 +32,4 @@ class Prediction(db.Model):
     __tablename__ = 'predictions'
     id = db.Column(db.Integer, primary_key=True)
     patient_id = db.Column(db.String(36), db.ForeignKey('patients.id'))
-    prediction = db.Column(db.Integer, nullable=False)
+    prediction = db.Column(db.Text, nullable=False)
