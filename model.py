@@ -1,6 +1,6 @@
 import pandas as pd
 import numpy as np
-from joblib import load
+import onnxruntime as rt
 import category_encoders as ce
 from typing import List, Optional
 
@@ -26,7 +26,10 @@ class Model:
         """
         self.model_path = model_path
         self.model_code = model_code
-        self.model = load(model_path)
+        # Load model.
+        self.model = rt.InferenceSession(model_path)
+        self.input_name = self.model.get_inputs()[0].name 
+        self.label_name = self.model.get_outputs()[0].name
         self.prediction = None
         # Set features based on model code. 
         if self.model_code == "DS3":
@@ -64,7 +67,7 @@ class Model:
         Process the output to a human-reader format.
         """
         predstring = ''
-        pred = np.argmax(self.prediction[1])
+        pred = self.prediction[0][0]
         if pred==1:
             predstring += f"Positive"
         else:
@@ -76,5 +79,5 @@ class Model:
         Predict by calling the model class.
         """
         df = self._preprocessing(df)[self.features]
-        self.prediction = self.model.predict(df), self.model.predict_proba(df)
+        self.prediction = self.model.run(None, {self.input_name: df.astype(np.float32).values})
         return self._postprocessing()
