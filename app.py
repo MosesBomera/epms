@@ -35,7 +35,7 @@ Session(app)
 # Paths to logs, move to .env file.
 TEMP_PATH = os.path.join(basedir, 'logs', 'temperature.txt')
 SPO2_PATH = os.path.join(basedir, 'logs', 'sp02.txt')
-MODEL_PATH = os.path.join(basedir, 'models', 'DS3__RandomForestClassifier_Dataset_Three_Model.joblib')
+MODEL_PATH = os.path.join(basedir, 'models', 'DS3__RandomForestClassifier_Dataset_Three_Model.onnx')
 
 @app.route("/", methods=['POST', 'GET'])
 def index():
