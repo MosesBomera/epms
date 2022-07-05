@@ -2,9 +2,9 @@ import pandas as pd
 import numpy as np
 import onnxruntime as rt
 import category_encoders as ce
-from typing import List, Optional
+from typing import List, Optional, Union
 
-class Model:
+class MlModel:
     """
     Model class.
     """
@@ -81,3 +81,53 @@ class Model:
         df = self._preprocessing(df)[self.features]
         self.prediction = self.model.run(None, {self.input_name: df.astype(np.float32).values})
         return self._postprocessing()
+
+
+class RulesModel:
+    def __init__(
+        self, 
+        temperature: Union[int, float, str], 
+        spo2: Union[int, float, str],
+        mlmodel_prediction: int
+    ):
+        """
+        Rules based model.
+
+        Parameters
+        ----------
+        temperature
+            The measured temperature.
+        sp02
+            The measured pulse oximetry.
+        mlmodel_prediction
+            The machine learning model prediction.
+        """
+        self.temperature = float(temperature)
+        self.spo2 = float(spo2)
+        self.mlmodel_prediction = True if mlmodel_prediction == 1 else False
+
+    def __call__(self):
+        """
+        Run rules-based predictions.
+        """
+        rules_prediction = None
+
+        if self.temperature >= 37.4 and self.sp02 <= 93:
+            # Positive
+            rules_prediction = True
+        else:
+            # Negative.
+            rules_prediction = False
+
+        # Combination. 
+        if rules_prediction and self.mlmodel_prediction:
+            return "Highly Suspicious"
+        
+        if rules_prediction and not self.mlmodel_prediction:
+            return "Suspicious"
+
+        if not rules_prediction and self.mlmodel_prediction:
+            return "Suspicious"
+
+        if not rules_prediction and not self.mlmodel_prediction:
+            return "Not Suspicious"
