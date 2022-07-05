@@ -10,7 +10,7 @@ from flask_migrate import Migrate
 from db import db, User, Patient, Prediction
 from utils import logged_in
 from utils import read_sensor_logs
-from model import Model
+from model import MlModel, RulesModel
 
 # Configurations
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -110,8 +110,16 @@ def home():
         comment = patient_data.pop("comment")
         
         # The classifier model.
-        classifier = Model(MODEL_PATH)
+        classifier = MlModel(MODEL_PATH)
         covid_status_prediction = classifier(pd.DataFrame(patient_data, index=[0]))
+
+        # Rules-based model.
+        rules_model = RulesModel(
+            patient_data["temperature"], 
+            patient_data["sp02"], 
+            mlmodel_prediction=classifier.prediction[0][0]
+        )
+        rules_model_prediction = rules_model()
         
         # Patient. 
         patient = Patient(id=patient_id, name=name, email=email, phone=phone, 
@@ -120,12 +128,15 @@ def home():
         # Prediction
         prediction = Prediction(
             patient_id=patient_id, 
-            prediction=",".join((str(classifier.prediction[0]), str(classifier.prediction[1]))))
+            prediction=",".join(
+                (
+                    str(classifier.prediction[0]), str(classifier.prediction[1]), rules_model_prediction
+                )))
         
         db.session.add_all([patient, prediction])
         db.session.commit() # Write to database.
 
-        return render_template("prediction.html", prediction=covid_status_prediction)
+        return render_template("prediction.html", prediction=rules_model_prediction)
 
 
 @app.route("/api", methods=["GET"])
