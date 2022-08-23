@@ -4,6 +4,7 @@ import pandas as pd
 
 from flask import Flask, render_template, redirect
 from flask import session, request, jsonify, url_for
+from flask_mail import Mail, Message
 from flask_session import Session
 from flask_migrate import Migrate
 
@@ -25,6 +26,14 @@ db.app = app
 db.init_app(app)
 db.create_all()
 migrate = Migrate(app, db)
+
+# Mail 
+app.config['MAIL_SERVER'] = os.environ.get("MAIL_SERVER")
+app.config['MAIL_PORT'] = os.environ.get("MAIL_PORT")
+app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
+app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
+app.config['MAIL_USE_SSL'] = os.environ.get("MAIL_USE_SSL")
+mail = Mail(app)
 
 # Session
 app.secret_key = 'u893j2wmsldrircsmc5encx'
@@ -135,6 +144,15 @@ def home():
         
         db.session.add_all([patient, prediction])
         db.session.commit() # Write to database.
+        app.logger.info(f"The email: {os.environ.get('MAIL_PASSWORD')}")
+
+        # Send mail.
+        msg = Message(
+            'COVID-19 Screening Results', 
+            sender=os.environ.get("MAIL_USERNAME"), 
+            recipients = [email])
+        msg.body = f"Hello {name}, your screening for COVID-19 returned {rules_model_prediction}. \n\n EPMS Screening Team"
+        mail.send(msg)
 
         return render_template("prediction.html", prediction=rules_model_prediction)
 
