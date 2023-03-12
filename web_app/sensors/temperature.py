@@ -1,3 +1,8 @@
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+TEMP_PATH = os.path.join(basedir, 'logs', 'temperature.txt')
+
 def measureTemperature():
     from smbus2 import SMBus
     from mlx90614 import MLX90614
@@ -28,7 +33,7 @@ def measureTemperature():
     temp = Tavrg/samples
     print(temp)
 
-    with open("/home/epms/EPMS/EpmsApp/logs/temperature.txt", "w") as f:
+    with open(TEMP_PATH, "w") as f:
         f.write(str(temp))
 
     bus.close()

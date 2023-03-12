@@ -1,3 +1,8 @@
+import os
+
+basedir = os.path.abspath(os.path.dirname(__file__))
+SPO2_PATH = os.path.join(basedir, 'logs', 'sp02.txt')
+
 def measureSp02():
     response = {
         "status": False,
@@ -7,7 +12,6 @@ def measureSp02():
     from .libs import max30102
     from .libs import hrcalc
     from time import sleep
-    import os
 
     m = max30102.MAX30102();
     spo2 = 0
@@ -42,7 +46,7 @@ def measureSp02():
         try:            
             spo2 =  spo2_sum / counter
             print(spo2)
-            with open("/home/epms/EPMS/EpmsApp/logs/sp02.txt", "w") as f:
+            with open(SPO2_PATH, "w") as f:
                 f.write(str(spo2))
 
             response = {
