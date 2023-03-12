@@ -19,7 +19,7 @@ class User(db.Model):
 class Patient(db.Model):
     __tablename__ = 'patients'
     id = db.Column(db.String(36), primary_key=True)
-    name = db.Column(db.String(64), nullable=False)
+    name = db.Column(db.String(64))
     email = db.Column(db.String(64))
     phone = db.Column(db.String(13)) 
     symptoms = db.Column(db.Text, nullable=False)
