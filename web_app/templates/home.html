@@ -15,7 +15,7 @@
 
     <!-- The form -->
     <form action="{{ url_for('home') }}" method="post">
-      	  
+
 	  <!-- Phone -->
 	  <div class="form-group row">
         <label for="phone" class="col-sm-2 col-form-label">Phone Number</label>
@@ -24,19 +24,32 @@
         </div>
       </div>
 
-       <!-- Temperature -->
       <div class="form-group row">
         <label for="temperature" class="col-sm-2 col-form-label">Temperature</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" name="temperature"  value="{{ temp }}" required>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="temperature" id="temperature" value="{{ temp }}" required>
+          <span class="text-danger" id="temperatureError"></span>
+        </div>
+        <div class="col-sm-2">
+          <button type="button" id="measureTemperatureButton" class="btn btn-primary">Measure</button>
+          <div class="spinner-border text-primary" role="status" id="temperatureSpinner" style="display: none;">
+            <span class="sr-only">Loading...</span>
+          </div>
         </div>
       </div>
 
       <!-- sp02 -->
       <div class="form-group row">
         <label for="age" class="col-sm-2 col-form-label">Sp02</label>
-        <div class="col-sm-10">
-          <input type="text" class="form-control" name="sp02" value="{{ sp02 }}" required>
+        <div class="col-sm-8">
+          <input type="text" class="form-control" name="sp02" id="sp02" value="{{ sp02 }}" required>
+          <span class="text-danger" id="sp02Error"></span>
+        </div>
+        <div class="col-sm-2">
+          <button type="button" id="measureSp02Button" class="btn btn-primary">Measure</button>
+          <div class="spinner-border text-primary" role="status" id="sp02Spinner" style="display: none;">
+            <span class="sr-only">Loading...</span>
+          </div>
         </div>
       </div>
 
