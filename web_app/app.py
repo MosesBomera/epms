@@ -174,6 +174,68 @@ def home():
         return render_template("prediction.html", prediction=rules_model_prediction)
 
 
+@app.route("/triage", methods=['POST', 'GET'])
+@logged_in
+def triage():
+    """
+    Triage process.
+    """
+    username = session['username']
+    lastname = session['lastname']
+    # Display form if a GET method
+    if request.method == 'GET':
+        # Get the temperature, oximeter values.
+        temp, sp02 = read_sensor_logs(TEMP_PATH), read_sensor_logs(SPO2_PATH)
+        return render_template("triage.html", temp=temp, sp02=sp02)
+
+    if request.method == 'POST':
+        # Get patient data, symptoms.
+        patient_id = str(uuid.uuid4())
+        patient_data = dict(request.form)
+
+        # Get patient details.
+        name, email, phone = patient_data.pop("name"), patient_data.pop("email"), \
+                             patient_data.pop("phone")
+        # Remove comment field from symptom data.
+        comment = patient_data.pop("comment")
+        
+        # The classifier model.
+        classifier = MlModel(MODEL_PATH)
+        covid_status_prediction = classifier(pd.DataFrame(patient_data, index=[0]))
+
+        # Rules-based model.
+        rules_model = RulesModel(
+            patient_data["temperature"], 
+            patient_data["sp02"], 
+            mlmodel_prediction=classifier.prediction[0][0]
+        )
+        rules_model_prediction = rules_model()
+        
+        # Patient. 
+        patient = Patient(id=patient_id, name=name, email=email, phone=phone, symptoms=str(patient_data),comment=comment)
+
+        # Prediction
+        prediction = Prediction(
+            patient_id=patient_id, 
+            prediction=",".join(
+                (
+                    str(classifier.prediction[0]), str(classifier.prediction[1]), rules_model_prediction
+                )))
+        
+        db.session.add_all([patient, prediction])
+        db.session.commit() # Write to database.
+        app.logger.info(f"The email: {os.environ.get('MAIL_PASSWORD')}")
+
+        # Send mail.
+        msg = Message('COVID-19 Screening Results', sender = 'makcov23@gmail.com', recipients = [email])
+        text = f"Hello {name}, your screening for COVID-19 returned {rules_model_prediction}. \n\n EPMS Screening Team"
+        msg.body = text
+        mail.send(msg)
+        sendSMS(phone, text)
+
+        return render_template("prediction.html", prediction=rules_model_prediction)
+
+
 @app.route("/api", methods=["GET"])
 @logged_in
 def api():
