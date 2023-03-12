@@ -132,24 +132,43 @@ def home():
         patient_data = dict(request.form)
 
         # Get patient details.
-        phone = patient_data.pop("phone")
+        name, email, phone = patient_data.pop("name"), patient_data.pop("email"), \
+                             patient_data.pop("phone")
+        # Remove comment field from symptom data.
+        comment = patient_data.pop("comment")
         
+        # The classifier model.
+        classifier = MlModel(MODEL_PATH)
+        covid_status_prediction = classifier(pd.DataFrame(patient_data, index=[0]))
+
         # Rules-based model.
         rules_model = RulesModel(
             patient_data["temperature"], 
             patient_data["sp02"], 
-            mlmodel_prediction=None
+            mlmodel_prediction=classifier.prediction[0][0]
         )
         rules_model_prediction = rules_model()
         
         # Patient. 
-        patient = Patient(id=patient_id, phone=phone, symptoms=str(patient_data))
+        patient = Patient(id=patient_id, name=name, email=email, phone=phone, symptoms=str(patient_data),comment=comment)
 
-        db.session.add_all([patient])
+        # Prediction
+        prediction = Prediction(
+            patient_id=patient_id, 
+            prediction=",".join(
+                (
+                    str(classifier.prediction[0]), str(classifier.prediction[1]), rules_model_prediction
+                )))
+        
+        db.session.add_all([patient, prediction])
         db.session.commit() # Write to database.
+        app.logger.info(f"The email: {os.environ.get('MAIL_PASSWORD')}")
 
-        # Send SMS
-        text = f"Hello, your screening for COVID-19 returned {rules_model_prediction}. \n\n EPMS Screening Team"
+        # Send mail.
+        msg = Message('COVID-19 Screening Results', sender = 'makcov23@gmail.com', recipients = [email])
+        text = f"Hello {name}, your screening for COVID-19 returned {rules_model_prediction}. \n\n EPMS Screening Team"
+        msg.body = text
+        mail.send(msg)
         sendSMS(phone, text)
 
         return render_template("prediction.html", prediction=rules_model_prediction)
