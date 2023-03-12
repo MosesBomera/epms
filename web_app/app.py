@@ -1,6 +1,7 @@
 import os
 import uuid
 import pandas as pd
+import requests
 
 from flask import Flask, render_template, redirect
 from flask import session, request, jsonify, url_for
@@ -12,6 +13,9 @@ from db import db, User, Patient, Prediction
 from utils import logged_in
 from utils import read_sensor_logs
 from model import MlModel, RulesModel
+
+from sensors.temperature import measureTemperature
+from sensors.spo2 import measureSp02
 
 # Configurations
 basedir = os.path.abspath(os.path.dirname(__file__))
@@ -33,7 +37,7 @@ app.config['MAIL_SERVER'] = os.environ.get("MAIL_SERVER")
 app.config['MAIL_PORT'] = os.environ.get("MAIL_PORT")
 app.config['MAIL_USERNAME'] = os.environ.get("MAIL_USERNAME")
 app.config['MAIL_PASSWORD'] = os.environ.get("MAIL_PASSWORD")
-app.config['MAIL_USE_SSL'] = os.environ.get("MAIL_USE_SSL")
+app.config['MAIL_USE_TLS'] = True
 mail = Mail(app)
 
 # Session
@@ -94,6 +98,20 @@ def logout():
     return render_template("index.html", message="Logged Out!")
 
 
+@app.route("/complete", methods=['GET'])
+@logged_in
+def complete():
+    sp02 = request.args.get('sp02')
+    temperature = request.args.get('temperature')
+    phone = request.args.get('phone')
+
+    if phone:
+        text = f"Hello, your screening for COVID-19 returned normal.\n sp02: {sp02}, temperature: {temperature}. \n\n EPMS Screening Team"
+        sendSMS(phone, text)
+        
+    return render_template("complete.html", phone=phone)
+
+
 @app.route("/home", methods=['POST', 'GET'])
 @logged_in
 def home():
@@ -132,8 +150,7 @@ def home():
         rules_model_prediction = rules_model()
         
         # Patient. 
-        patient = Patient(id=patient_id, name=name, email=email, phone=phone, 
-            symptoms=str(patient_data),comment=comment)
+        patient = Patient(id=patient_id, name=name, email=email, phone=phone, symptoms=str(patient_data),comment=comment)
 
         # Prediction
         prediction = Prediction(
@@ -148,12 +165,11 @@ def home():
         app.logger.info(f"The email: {os.environ.get('MAIL_PASSWORD')}")
 
         # Send mail.
-        msg = Message(
-            'COVID-19 Screening Results', 
-            sender=os.environ.get("MAIL_USERNAME"), 
-            recipients = [email])
-        msg.body = f"Hello {name}, your screening for COVID-19 returned {rules_model_prediction}. \n\n EPMS Screening Team"
+        msg = Message('COVID-19 Screening Results', sender = 'makcov23@gmail.com', recipients = [email])
+        text = f"Hello {name}, your screening for COVID-19 returned {rules_model_prediction}. \n\n EPMS Screening Team"
+        msg.body = text
         mail.send(msg)
+        sendSMS(phone, text)
 
         return render_template("prediction.html", prediction=rules_model_prediction)
 
@@ -176,3 +192,39 @@ def api():
         return jsonify({"Info": "No data found."}), 404
     # Return json object.
     return data.to_json()
+
+
+@app.route("/measure/temperature", methods=['GET'])
+def temperature():
+    try:
+        data = {
+            "status": True,
+            "value": measureTemperature()
+        }
+    except:
+        data = {
+            "status": False,
+            "value": "An error occured, Try again"
+        }
+        
+    return jsonify(data)
+
+
+@app.route("/measure/sp02", methods=['GET'])
+def sp02():
+    data = measureSp02()
+    return jsonify(data)
+
+
+def sendSMS(phone_number, message):
+    response = requests.get(
+        os.environ.get("SMS_HOSTNAME"),
+        params={
+            'user': os.environ.get("SMS_USERNAME"),
+            'password': os.environ.get("SMS_PASSWORD"),
+            'sender': os.environ.get("SMS_SENDER"),
+            'reciever': phone_number,
+            'message': message,
+        }
+    )
+    return response
