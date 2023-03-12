@@ -149,7 +149,15 @@ def home():
         db.session.commit() # Write to database.
 
         # Send SMS
-        text = f"Hello, your screening for COVID-19 returned {rules_model_prediction}. \n\n EPMS Screening Team"
+        if rules_model_prediction == "Not Suspicious":
+            text = f"Hello, your screening for COVID-19 returned {rules_model_prediction}."\
+                    "\nStay safe."\
+                    "\n\n EPMS Screening Team"
+        else:
+            text = f"Hello, your screening for COVID-19 returned {rules_model_prediction}."\
+                    "\nCheck with your health care provider for further checks."\
+                    "\n\n EPMS Screening Team"
+            
         sendSMS(phone, text)
 
         return render_template("prediction.html", prediction=rules_model_prediction)
@@ -193,7 +201,14 @@ def triage():
         rules_model_prediction = rules_model()
         
         # Patient. 
-        patient = Patient(id=patient_id, name=name, email=email, phone=phone, symptoms=str(patient_data),comment=comment)
+        patient = Patient(
+            id=patient_id, 
+            name=name, 
+            email=email, 
+            phone=phone, 
+            symptoms=str(patient_data),
+            comment=comment
+        )
 
         # Prediction
         prediction = Prediction(
@@ -205,11 +220,22 @@ def triage():
         
         db.session.add_all([patient, prediction])
         db.session.commit() # Write to database.
-        app.logger.info(f"The email: {os.environ.get('MAIL_PASSWORD')}")
 
         # Send mail.
-        msg = Message('COVID-19 Screening Results', sender = 'makcov23@gmail.com', recipients = [email])
-        text = f"Hello {name}, your screening for COVID-19 returned {rules_model_prediction}. \n\n EPMS Screening Team"
+        msg = Message(
+            'COVID-19 Screening Results', 
+            sender = os.environ.get("MAIL_USERNAME"), 
+            recipients = [email])
+
+        if rules_model_prediction == "Not Suspicious":
+            text = f"Hello, your screening for COVID-19 returned {rules_model_prediction}."\
+                    "\nStay safe."\
+                    "\n\n EPMS Screening Team"
+        else:
+            text = f"Hello, your screening for COVID-19 returned {rules_model_prediction}."\
+                    "\nCheck with your health care provider for further checks."\
+                    "\n\n EPMS Screening Team"
+            
         msg.body = text
         mail.send(msg)
         sendSMS(phone, text)
@@ -229,10 +255,10 @@ def api():
                    " patients JOIN predictions" \
                    " ON patients.id = predictions.patient_id;"
     data = pd.read_sql_query(query_string, app.config['SQLALCHEMY_DATABASE_URI'])
-    # app.logger.debug(f"DB Data: {data}")
+
     # Not found.
     if data.empty:
-        return jsonify({"Info": "No data found."}), 404
+        return jsonify({"Info": "No prediction data found."}), 404
     # Return json object.
     return data.to_json()
 
