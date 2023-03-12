@@ -2,7 +2,7 @@ import pandas as pd
 import numpy as np
 import onnxruntime as rt
 import category_encoders as ce
-from typing import List, Optional, Union
+from typing import Optional, Union
 
 class MlModel:
     """
@@ -87,8 +87,8 @@ class RulesModel:
     def __init__(
         self, 
         temperature: Union[int, float, str], 
-        spo2: Union[int, float, str],
-        mlmodel_prediction: int
+        sp02: Union[int, float, str],
+        mlmodel_prediction: Optional[Union[None, int]] = None
     ):
         """
         Rules based model.
@@ -103,8 +103,12 @@ class RulesModel:
             The machine learning model prediction.
         """
         self.temperature = float(temperature)
-        self.spo2 = float(spo2)
-        self.mlmodel_prediction = True if mlmodel_prediction == 1 else False
+        self.sp02 = float(sp02)
+        self.use_ml = False
+
+        if mlmodel_prediction:
+            self.mlmodel_prediction = True if mlmodel_prediction == 1 else False
+            self.use_ml = True
 
     def __call__(self):
         """
@@ -112,22 +116,27 @@ class RulesModel:
         """
         rules_prediction = None
 
-        if self.temperature >= 37.4 and self.sp02 <= 93:
-            # Positive
-            rules_prediction = True
-        else:
-            # Negative.
-            rules_prediction = False
+        if self.use_ml:
+            if self.temperature >= 37.4 and self.sp02 <= 93:
+                # Positive
+                rules_prediction = True
+            else:
+                # Negative.
+                rules_prediction = False
 
-        # Combination. 
-        if rules_prediction and self.mlmodel_prediction:
-            return "Highly Suspicious"
-        
-        if rules_prediction and not self.mlmodel_prediction:
-            return "Suspicious"
+            # Combination. 
+            if rules_prediction and self.mlmodel_prediction:
+                return "Highly Suspicious"
+            
+            if rules_prediction and not self.mlmodel_prediction:
+                return "Suspicious"
 
-        if not rules_prediction and self.mlmodel_prediction:
-            return "Suspicious"
+            if not rules_prediction and self.mlmodel_prediction:
+                return "Suspicious"
 
-        if not rules_prediction and not self.mlmodel_prediction:
-            return "Not Suspicious"
+            if not rules_prediction and not self.mlmodel_prediction:
+                return "Not Suspicious"
+            
+        # Ignore ML model.
+        rules_prediction = True if self.temperature >= 37.4 or self.sp02 <= 93 else False
+        return "Suspicious" if rules_prediction else "Not Suspicious"
